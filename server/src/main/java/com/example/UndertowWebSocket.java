@@ -13,7 +13,6 @@ public class UndertowWebSocket {
 
     @OnOpen
     public void onOpen(Session session) {
-        System.out.println("WebSocket opened: " + session.getId());
         benchmarkServer.onOpen();
     }
 
@@ -31,7 +30,6 @@ public class UndertowWebSocket {
 
     @OnClose
     public void onClose(Session session) {
-        System.out.println("WebSocket closed: " + session.getId());
         benchmarkServer.onClose(session.getId());
     }
 
