@@ -1,0 +1,8 @@
+{
+    "ip": "ws://localhost:8887",
+    "totalClients": 50,
+    "batchSize": 10,
+    "messageInterval": 1000,
+    "totalRunTime": 0,
+    "totalMessagesToSend": 3
+}
