@@ -12,8 +12,8 @@ public class App {
     public void start() {
         System.out.println("Please choose a server to start:");
         System.out.println("1. JavaWebSocketAdapter (Port 8887)");
-        System.out.println("2. NettyWebSocketAdapter (Port 8888)");
-        System.out.println("3. UndertowWebSocketAdapter (Port 8889)");
+        System.out.println("2. NettyWebSocketAdapter (Port 8887)");
+        System.out.println("3. UndertowWebSocketAdapter (Port 8887)");
         System.out.print("Enter your choice (1/2/3): ");
 
         Scanner scanner = new Scanner(System.in);
@@ -26,11 +26,11 @@ public class App {
                     javaServer.start();
                     break;
                 case 2:
-                    NettyWebSocketAdapter nettyServer = new NettyWebSocketAdapter(8888);
+                    NettyWebSocketAdapter nettyServer = new NettyWebSocketAdapter(8887);
                     nettyServer.start();
                     break;
                 case 3:
-                    UndertowWebSocketAdapter undertowServer = new UndertowWebSocketAdapter(8889);
+                    UndertowWebSocketAdapter undertowServer = new UndertowWebSocketAdapter(8887);
                     undertowServer.start();
                     break;
                 default:

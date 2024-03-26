@@ -18,7 +18,6 @@ public class UndertowWebSocket {
 
     @OnMessage
     public void onMessage(String message, Session session) {
-        System.out.println("Message received: " + message);
         benchmarkServer.onMessageReceived();
         try {
             session.getBasicRemote().sendText("Echo: " + message);

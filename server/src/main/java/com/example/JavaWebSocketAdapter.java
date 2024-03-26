@@ -40,6 +40,7 @@ public class JavaWebSocketAdapter extends WebSocketServer {
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         String sessionId = conn.getAttachment();
         benchmarkServer.onClose(sessionId);
+        // return sessionId; // Remove this line if not needed
     }
 
     @Override
