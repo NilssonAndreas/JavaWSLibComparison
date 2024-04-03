@@ -12,12 +12,13 @@ const batchSize = process.env.BATCH_SIZE || config.batchSize; // Connect clients
 const messageInterval = process.env.MESSAGE_INTERVAL || config.messageInterval; // Send a message every X milliseconds (2 seconds)
 const totalRunTime = process.env.TOTAL_RUN_TIME || config.totalRunTime; // Total time to run the benchmark (in milliseconds)
 const totalMessagesToSend = process.env.TOTAL_MESSAGES_TO_SEND || config.totalMessagesToSend; // Total number of messages to send
+const collectionName = process.env.COLLECTION || config.collectionName; // MongoDB collection name
 
 const main = async () => {
   console.log("Starting benchmark...");
   const dbClient = await db.connectToMongoDB();
   console.log("After db connect");
-  const collection = dbClient.db("benchmark").collection("messages");
+  const collection = dbClient.db("benchmark").collection(collectionName);
 
   const connections = await connectWebSocketClientsInBatches(
     serverUri,
