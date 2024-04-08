@@ -1,9 +1,0 @@
-{
-    "ip": "ws://localhost:8887",
-    "totalClients": 1,
-    "batchSize": 0,
-    "messageInterval": 100,
-    "totalRunTime": 0,
-    "totalMessagesToSend": 1,
-    "collectionName": "10cli"
-}

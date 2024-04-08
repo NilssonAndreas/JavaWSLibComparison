@@ -20,7 +20,7 @@ public class UndertowWebSocket {
     public void onMessage(String message, Session session) {
         benchmarkServer.onMessageReceived();
         try {
-            session.getBasicRemote().sendText("Echo: " + message);
+            session.getBasicRemote().sendText(message);
             benchmarkServer.onMessageSent();
         } catch (Exception e) {
             e.printStackTrace();

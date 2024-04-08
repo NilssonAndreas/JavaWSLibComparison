@@ -1,19 +1,18 @@
 {
-  "name": "client",
+  "name": "socketclient",
   "version": "1.0.0",
   "description": "",
-  "main": "benchMark.js",
+  "main": "main.js",
   "scripts": {
-    "dev": "node --watch benchMark.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "inquirer": "^9.2.17",
     "mongodb": "^6.5.0",
-    "timestamp-nano": "^1.0.1",
-    "uuid": "^9.0.1",
+    "redis": "^4.6.13",
     "ws": "^8.16.0"
   }
 }

@@ -39,6 +39,14 @@ services:
       - TOTAL_RUN_TIME=0
       - TOTAL_MESSAGES_TO_SEND=3
       - MONGO_URI=mongodb://bench:mark@mongodb:27017/benchmark?authSource=admin
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 volumes:
   grafana-data:
   mongodb-data:
+  redis_data:
