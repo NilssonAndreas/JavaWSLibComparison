@@ -1,6 +1,6 @@
-const BaseTest = require('./baseTest');
+const BaseTest = require('./baseTest.js');
 const TimedWebSocketClient = require('./baseSocket.js');
-class SpikeTest extends BaseTest {
+class TimedTest extends BaseTest {
   constructor(url, options) {
     super(url, options);
     this.runTime = options.runTime;
@@ -27,11 +27,11 @@ class SpikeTest extends BaseTest {
   }
   
   async run() {
-    console.log('Setting up SpikeTest');
+    console.log('Setting up test');
     await this.setup();
     console.log('Connecting clients');
     await this.connectClients();
-    console.log('Running SpikeTest');
+    console.log('Running test');
   }
 
   async connectClients() {
@@ -49,4 +49,4 @@ class SpikeTest extends BaseTest {
 
 }
 
-module.exports = SpikeTest;
+module.exports = TimedTest;

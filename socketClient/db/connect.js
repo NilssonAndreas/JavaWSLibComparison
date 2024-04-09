@@ -5,6 +5,10 @@ const mongoUri = config.mongo.uri;
 let mongoClient;
 let mongoCollection;
 
+/**
+ * Sets up the database connections.
+ * @returns {Promise<void>} A promise that resolves when the database connections are set up successfully.
+ */
 async function setupDatabaseConnections() {
   try {
     // Setup MongoDB connection

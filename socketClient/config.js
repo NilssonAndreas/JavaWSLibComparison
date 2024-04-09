@@ -9,17 +9,22 @@ const config = {
     payload: "payload",
   },
   spikeTest: {
-    numClients: 1000,
+    numClients: 10000,
     runTime: 15000,
     messageInterval: 1000,
     spike: {
 
-      numClients: 1000,
+      numClients: 4500,
       runTime: 5000,
       waitTime: 5000,
       messageInterval: 1000,
     }
     
+  },
+  rtt: {
+    numClients: 1000,
+    runTime: 15000,
+    messageInterval: 1000,
   },
 };
 

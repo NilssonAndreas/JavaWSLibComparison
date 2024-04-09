@@ -74,6 +74,10 @@ class BaseTest {
     throw new Error("Subclasses must implement the run() method.");
   }
 
+  /**
+   * Finalizes the test by checking if all clients are complete and performs the necessary teardown.
+   * @returns {void}
+   */
   async finalize() {
     console.log("Finalizing test...");
     if (this.clients.every((client) => client.isComplete)) {
