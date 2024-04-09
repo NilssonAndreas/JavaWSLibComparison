@@ -1,7 +1,7 @@
 package com.example;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+// import java.time.LocalDateTime;
+// import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +16,7 @@ public abstract class BenchmarkSocketServer {
 
     // Abstract methods to be implemented by subclasses for server control
     public abstract void startServer() throws Exception;
+
     public abstract void stopServer() throws Exception;
 
     // Methods for session management and metrics logging
@@ -35,19 +36,19 @@ public abstract class BenchmarkSocketServer {
     }
 
     public void onMessageReceived() {
-        long messages = totalMessagesReceived.incrementAndGet();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss");
-        String formattedDate = LocalDateTime.now().format(formatter);
-        System.out.println("Messaged received on: " + formattedDate);
-        System.out.println("Message received. Total messages received: " + messages);
+        // long messages = totalMessagesReceived.incrementAndGet();
+        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss");
+        // String formattedDate = LocalDateTime.now().format(formatter);
+        // System.out.println("Messaged received on: " + formattedDate);
+        // System.out.println("Message received. Total messages received: " + messages);
     }
 
     public void onMessageSent() {
-        long messages = totalMessagesSent.incrementAndGet();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss");
-        String formattedDate = LocalDateTime.now().format(formatter);
-        System.out.println("Messaged sent on: " + formattedDate);
-        System.out.println("Message sent. Total messages sent: " + messages);
+        // long messages = totalMessagesSent.incrementAndGet();
+        // DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss");
+        // String formattedDate = LocalDateTime.now().format(formatter);
+        // System.out.println("Messaged sent on: " + formattedDate);
+        // System.out.println("Message sent. Total messages sent: " + messages);
     }
 
     public void logMetrics() {

@@ -39,7 +39,8 @@ class BaseWebSocketClient {
 
       this.socket.on("message", (data) => {
         data = JSON.parse(data);
-        data.recivedTimestamp = process.hrtime.bigint().toString();
+        data.receivedTimestamp = process.hrtime.bigint();
+        data.preSendTimestamp = BigInt(data.preSendTimestamp);
         getMongoCollection().insertOne(data);
         this.onDataReceived();
       });

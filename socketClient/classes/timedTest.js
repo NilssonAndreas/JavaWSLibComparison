@@ -4,6 +4,8 @@ class TimedTest extends BaseTest {
   constructor(url, options) {
     super(url, options);
     this.runTime = options.runTime;
+    this.clientStartId = options.clientStartId || 0;
+    this.startId = options.clientStartId || 0;
   }
 
   async setup() {
@@ -16,8 +18,8 @@ class TimedTest extends BaseTest {
       "url": this.url,
       "onDataReceived": this.onDataReceived.bind(this)
     }
-    for (let i = 0; i < this.options.numClients; i++) {
-        data.clientId = i.toString();
+    for (this.clientStartId; this.clientStartId < this.options.numClients + this.startId; this.clientStartId++) {
+        data.clientId = this.clientStartId.toString();
       const client = new TimedWebSocketClient(
        data
       );

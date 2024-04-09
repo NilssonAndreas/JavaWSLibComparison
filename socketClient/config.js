@@ -9,15 +9,15 @@ const config = {
     payload: "payload",
   },
   spikeTest: {
-    numClients: 10000,
-    runTime: 15000,
+    numClients: 5,
+    runTime: 60000,  // ToalRunTime for test
     messageInterval: 1000,
     spike: {
-
-      numClients: 4500,
-      runTime: 5000,
-      waitTime: 5000,
+      numClients: 5,
+      runTime: 20000,   // Time to run the spike test
+      waitTime: 1000,   // Time to wait before starting the next spike
       messageInterval: 1000,
+      clientStartId: 5,
     }
     
   },

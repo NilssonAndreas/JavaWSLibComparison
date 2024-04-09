@@ -13,6 +13,7 @@ class BaseTest {
     this.options = options;
     this.clients = [];
     this.results = 0;
+    this.clientStartId = options.clientStartId || 0;
   }
 
   /**
@@ -22,9 +23,10 @@ class BaseTest {
    * @returns {Promise<void>} A promise that resolves when the setup is complete.
    */
   async setup() {
-    for (let i = 0; i < this.options.numClients; i++) {
+    console.log("id", this.clientStartId)
+    for (this.clientStartId; this.clientStartId < this.options.numClients; this.clientStartId++) {
       const client = new WebSocketClient(
-        i.toString(),
+        this.clientStartId.toString(),
         this.url,
         this.options.numMessages,
         this.options.messageInterval,
