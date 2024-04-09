@@ -7,3 +7,4 @@ target/**
 .vscode
 node_modules/
 *.CSV
+testResults.json
