@@ -33,7 +33,6 @@ const config = {
       runTime: 3000, // Time to run the spike test
       waitTime: 1000, // Time to wait before starting the next spike
       messageInterval: 500,
-      clientStartId: 5,
     },
   },
   rtt: {

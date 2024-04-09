@@ -131,6 +131,7 @@ const main = async () => {
 
         setTimeout(async () => {
           await setMongoCollection(options.mongo.spikeCollectionName);
+          spikeTestData.spike.numClients = spikeTestData.numClients;
           const test2 = new TimedTest(url, spikeTestData.spike);
           console.log("Starting spike with increased load...");
           await test2.run();
