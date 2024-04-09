@@ -25,13 +25,13 @@ const config = {
     nameOfTest: "LoadTest",
   },
   spikeTest: {
-    numClients: 5,
-    runTime: 10000, // ToalRunTime for test
+    numClients: 1000,
+    runTime: 60000, // ToalRunTime for test
     messageInterval: 500,
     spike: {
-      numClients: 5,
-      runTime: 3000, // Time to run the spike test
-      waitTime: 1000, // Time to wait before starting the next spike
+      numClients: 3000,
+      runTime: 20000, // Time to run the spike test
+      waitTime: 20000, // Time to wait before starting the next spike
       messageInterval: 500,
     },
   },

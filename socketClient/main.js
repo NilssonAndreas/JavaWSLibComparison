@@ -85,7 +85,7 @@ const onCompleteSpike = async () => {
     console.log("Spike test complete. Waiting for normal test to finish...");
   }
   if (exitCounter === 2) {
-    console.log("Calculation results...");
+    console.log("Calulating results...  please wait.");
     await gatherResultsAndSave([
       options.mongo.collectionName,
       options.mongo.spikeCollectionName,
@@ -131,7 +131,7 @@ const main = async () => {
 
         setTimeout(async () => {
           await setMongoCollection(options.mongo.spikeCollectionName);
-          spikeTestData.spike.numClients = spikeTestData.numClients;
+          spikeTestData.spike.clientStartId = spikeTestData.numClients;
           const test2 = new TimedTest(url, spikeTestData.spike);
           console.log("Starting spike with increased load...");
           await test2.run();
