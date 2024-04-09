@@ -71,6 +71,7 @@ const calculateResults = async (collectionName) => {
           avgTimeDifference: { $avg: "$timeDifference" },
           minTimeDifference: { $min: "$timeDifference" }, // Find the fastest time
           maxTimeDifference: { $max: "$timeDifference" }, // Find the slowest time
+          messagesSentPerClient: { $sum: 1 }, // Count the number of messages per client
         },
       },
       {
@@ -81,6 +82,7 @@ const calculateResults = async (collectionName) => {
           totalClients: { $sum: 1 }, // Counts the unique clientIds
           fastestTimeDifference: { $min: "$minTimeDifference" }, // Overall fastest
           slowestTimeDifference: { $max: "$maxTimeDifference" }, // Overall slowest
+          totalMessagesSent: { $sum: "$messagesSentPerClient" }, // Sum up all messages sent
         },
       },
       {
@@ -97,6 +99,7 @@ const calculateResults = async (collectionName) => {
           slowestTimeDifferenceInMs: {
             $divide: ["$slowestTimeDifference", 1000000],
           },
+          totalMessagesSent: 1,
         },
       },
     ];
@@ -110,6 +113,7 @@ const calculateResults = async (collectionName) => {
         maxClientId: result[0].maxClientId,
         fastestTimeDifferenceInMs: result[0].fastestTimeDifferenceInMs, // Fastest time in ms
         slowestTimeDifferenceInMs: result[0].slowestTimeDifferenceInMs, // Slowest time in ms
+        totalMessagesSent: result[0].totalMessagesSent,
       };
     } else {
       return null;
