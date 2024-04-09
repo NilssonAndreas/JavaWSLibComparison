@@ -2,10 +2,24 @@ const config = {
   mongo: {
     uri: "mongodb://bench:mark@127.0.0.1:27018/benchmark?authSource=admin",
     dbName: "benchMarkDB",
-    collectionName: "testCollection",
+    collectionName: "SpikeTest",
   },
-  redis: {
-    uri: "redis://localhost:6379",
+  base: {
+    uri: "ws://localhost:8887",
+    payload: "payload",
+  },
+  spikeTest: {
+    numClients: 1000,
+    runTime: 15000,
+    messageInterval: 1000,
+    spike: {
+
+      numClients: 1000,
+      runTime: 5000,
+      waitTime: 5000,
+      messageInterval: 1000,
+    }
+    
   },
 };
 

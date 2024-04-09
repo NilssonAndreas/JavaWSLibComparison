@@ -1,6 +1,13 @@
-const WebSocketClient = require("./socket");
-const { startDataTransfer, stopDataTransfer } = require("../db/connect");
+const WebSocketClient = require("./baseSocket");
 class BaseTest {
+  /**
+   * Represents a BaseTest object.
+   * @constructor
+   * @param {string} url - The URL for the socket client.
+   * @param {Object} [options={}] - The options for the socket client.
+   * @param {Array} [clients] - The number of clients to create.
+   * @param {number} [results] - The number of results received.
+   */
   constructor(url, options = {}) {
     this.url = url;
     this.options = options;
@@ -8,8 +15,13 @@ class BaseTest {
     this.results = 0;
   }
 
+  /**
+   * Sets up the data transfer process for the WebSocket clients.
+   * Initializes the data transfer process and creates WebSocket clients based on the provided options.
+   * 
+   * @returns {Promise<void>} A promise that resolves when the setup is complete.
+   */
   async setup() {
-    startDataTransfer(); // Initialize the data transfer process
     for (let i = 0; i < this.options.numClients; i++) {
       const client = new WebSocketClient(
         i.toString(),
@@ -20,34 +32,42 @@ class BaseTest {
       );
       this.clients.push(client);
     }
-    // It might make more sense to call transferDataToMongoDB later,
-    // but it depends on your implementation details.
   }
 
+  /**
+   * Handles the event when data is received.
+   * Increments the results counter and checks if all messages have been received.
+   * If all messages have been received, it logs a message and finalizes the test after a 1-second delay.
+   * @returns {void}
+   */
   async onDataReceived() {
     this.results++;
     if (this.results >= this.options.numClients * this.options.numMessages) {
       console.log("All messages received.");
-      //   wait 1 second before finalizing the test
       setTimeout(() => {
         this.finalize();
       }, 1000);
     }
   }
-
+  
+  /**
+   * Connects all the clients and starts sending messages.
+   * @returns {Promise<void>} A promise that resolves when all clients are connected.
+   */
   async connectClients() {
     await Promise.all(this.clients.map((client) => client.connect()));
     console.log("All clients connected.");
     this.clients.forEach((client) => client.startSendingMessages());
   }
 
+  /**
+   * Cleans up resources and shuts down the test.
+   * @returns {Promise<void>} A promise that resolves when the teardown is complete.
+   */
   async teardown() {
     console.log("Closing WebSocket connections...");
-    this.clients.forEach((client) => client.close());
-    await stopDataTransfer(); // Cleanup after data transfer is done
-    console.log("Test complete.");
-    // shutdown the process
-    process.exit(0);
+    await Promise.all(this.clients.map((client) => client.close()));
+    this.options.onComplete();
   }
 
   async run() {

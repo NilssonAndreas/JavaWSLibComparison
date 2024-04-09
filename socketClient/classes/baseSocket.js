@@ -1,12 +1,22 @@
 const WebSocket = require("ws");
-const { getRedisClient, getMongoCollection } = require("../db/connect");
-class WebSocketClient {
-  constructor(clientId, url, numMessages, messageInterval, onDataReceived) {
-    this.clientId = clientId;
-    this.url = url;
-    this.numMessages = numMessages;
-    this.messageInterval = messageInterval;
-    this.onDataReceived = onDataReceived;
+const { getMongoCollection } = require("../db/connect");
+const config = require("../config");
+const payload = config.base.payload;
+class BaseWebSocketClient {
+/**
+ * Represents a new socket client.
+ * @constructor
+ * @param {Object} data - The data for initializing the socket client.
+ * @param {string} data.clientId - The client ID.
+ * @param {string} data.url - The URL of the socket server.
+ * @param {number} data.messageInterval - The interval in milliseconds between sending messages.
+ * @param {Function} data.onDataReceived - The callback function to handle received data.
+ */
+  constructor(data) {
+    this.clientId = data.clientId;
+    this.url = data.url;
+    this.messageInterval = data.messageInterval;
+    this.onDataReceived = data.onDataReceived;
     this.socket = null;
     this.messagesSent = 0;
     this.messageIntervalID = null;
@@ -14,6 +24,10 @@ class WebSocketClient {
     this.isConnected = false;
   }
 
+  /**
+   * Establishes a WebSocket connection.
+   * @returns {Promise<void>} A promise that resolves when the connection is established.
+   */
   connect() {
     return new Promise((resolve, reject) => {
       this.socket = new WebSocket(this.url);
@@ -26,13 +40,8 @@ class WebSocketClient {
       this.socket.on("message", (data) => {
         data = JSON.parse(data);
         data.recivedTimestamp = process.hrtime.bigint().toString();
-        // getRedisClient().lPush("websocketData", JSON.stringify(data));
         getMongoCollection().insertOne(data);
-
         this.onDataReceived();
-        if (this.messagesSent >= this.numMessages) {
-          this.isComplete = true;
-        }
       });
 
       this.socket.on("close", () => {
@@ -47,6 +56,10 @@ class WebSocketClient {
     });
   }
 
+  /**
+   * Starts sending messages at a specified interval.
+   * If the WebSocket is not connected, it logs an error message and returns.
+   */
   startSendingMessages() {
     if (!this.isConnected) {
       console.log("WebSocket is not connected. Cannot start sending messages.");
@@ -54,20 +67,20 @@ class WebSocketClient {
     }
 
     this.messageIntervalID = setInterval(() => {
-      if (this.messagesSent < this.numMessages && this.isConnected) {
         this.sendMessage();
-      } else {
-        this.stopSendingMessages();
-      }
     }, this.messageInterval);
   }
 
+  /**
+   * Sends a message through the socket.
+   * @returns {Promise<void>} A promise that resolves when the message is sent.
+   */
   async sendMessage() {
     const preSendTimestamp = process.hrtime.bigint().toString();
     const messageData = {
       clientId: this.clientId,
       messageIndex: this.messagesSent,
-      message: "Payload data here",
+      message: payload,
       preSendTimestamp: preSendTimestamp,
     };
 
@@ -76,6 +89,9 @@ class WebSocketClient {
     ++this.messagesSent;
   }
 
+  /**
+   * Stops sending messages.
+   */
   stopSendingMessages() {
     if (this.messageIntervalID) {
       clearInterval(this.messageIntervalID);
@@ -83,15 +99,28 @@ class WebSocketClient {
     }
   }
 
+  /**
+   * Handles WebSocket errors.
+   *
+   * @param {Error} error - The WebSocket error.
+   */
   handleError(error) {
     console.error("WebSocket error:", error);
   }
 
+  /**
+   * Closes the socket connection.
+   */
   close() {
-    if (this.socket) {
-      this.socket.close();
-    }
+    return new Promise((resolve, reject) => {
+      if (this.socket) {
+        this.socket.close();
+        resolve();
+      } else {
+        reject("Socket is not open.");
+      }
+    });
   }
 }
 
-module.exports = WebSocketClient;
+module.exports = BaseWebSocketClient;

@@ -16,10 +16,10 @@ public class NettyWebSocketFrameHandler extends SimpleChannelInboundHandler<Text
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame frame) {
         // Log the received message
         benchmarkServer.onMessageReceived();
-        
+
         // Echo the frame
-        ctx.channel().writeAndFlush(new TextWebSocketFrame("Echo: " + frame.text()));
-        
+        ctx.channel().writeAndFlush(new TextWebSocketFrame(frame.text()));
+
         // Log the sent message
         benchmarkServer.onMessageSent();
     }

@@ -1,20 +1,20 @@
 version: '3'
 services:
-  prometheus:
-    image: prom/prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
+  # prometheus:
+  #   image: prom/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   command:
+  #     - "--config.file=/etc/prometheus/prometheus.yml"
 
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana-data:/var/lib/grafana
+  # grafana:
+  #   image: grafana/grafana
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - grafana-data:/var/lib/grafana
 
   mongodb:
     image: mongo:latest
@@ -27,26 +27,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: mark
       MONGO_INITDB_DATABASE: benchmark
 
-  benchmark-client:
-    build:
-      context: ./client
-      dockerfile: docker/dockerfile
-    environment:
-      - SERVER_URI=ws://host.docker.internal:8887
-      - TOTAL_CLIENTS=50
-      - BATCH_SIZE=10
-      - MESSAGE_INTERVAL=1000
-      - TOTAL_RUN_TIME=0
-      - TOTAL_MESSAGES_TO_SEND=3
-      - MONGO_URI=mongodb://bench:mark@mongodb:27017/benchmark?authSource=admin
-  redis:
-    image: redis:latest
-    container_name: redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
+
 volumes:
-  grafana-data:
+  # grafana-data:
   mongodb-data:
-  redis_data:
