@@ -3,15 +3,15 @@ const { getMongoCollection } = require("../db/connect");
 const config = require("../config");
 const payload = config.base.payload;
 class BaseWebSocketClient {
-/**
- * Represents a new socket client.
- * @constructor
- * @param {Object} data - The data for initializing the socket client.
- * @param {string} data.clientId - The client ID.
- * @param {string} data.url - The URL of the socket server.
- * @param {number} data.messageInterval - The interval in milliseconds between sending messages.
- * @param {Function} data.onDataReceived - The callback function to handle received data.
- */
+  /**
+   * Represents a new socket client.
+   * @constructor
+   * @param {Object} data - The data for initializing the socket client.
+   * @param {string} data.clientId - The client ID.
+   * @param {string} data.url - The URL of the socket server.
+   * @param {number} data.messageInterval - The interval in milliseconds between sending messages.
+   * @param {Function} data.onDataReceived - The callback function to handle received data.
+   */
   constructor(data) {
     this.clientId = data.clientId;
     this.url = data.url;
@@ -68,7 +68,7 @@ class BaseWebSocketClient {
     }
 
     this.messageIntervalID = setInterval(() => {
-        this.sendMessage();
+      this.sendMessage();
     }, this.messageInterval);
   }
 

@@ -1,25 +1,40 @@
+function formatTestDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  // Pad the month and date with a leading zero if they are less than 10
+  const month = (now.getMonth() + 1).toString().padStart(2, "0");
+  const date = now.getDate().toString().padStart(2, "0");
+  const hours = now.getHours().toString().padStart(2, "0");
+  const minutes = now.getMinutes().toString().padStart(2, "0");
+  // Format as "yyyy-mm-dd: hh:mm"
+  return `${year}-${month}-${date}:${hours}:${minutes}`;
+}
+
 const config = {
   mongo: {
     uri: "mongodb://bench:mark@127.0.0.1:27018/benchmark?authSource=admin",
     dbName: "benchMarkDB",
-    collectionName: "SpikeTest",
+    collectionName: "beforeSpike",
+    spikeCollectionName: "duringSpike",
+    afterSpikeCollectionName: "afterSpike",
   },
   base: {
     uri: "ws://localhost:8887",
     payload: "payload",
+    dateOfTest: formatTestDate(),
+    nameOfTest: "LoadTest",
   },
   spikeTest: {
     numClients: 5,
-    runTime: 60000,  // ToalRunTime for test
-    messageInterval: 1000,
+    runTime: 10000, // ToalRunTime for test
+    messageInterval: 500,
     spike: {
       numClients: 5,
-      runTime: 20000,   // Time to run the spike test
-      waitTime: 1000,   // Time to wait before starting the next spike
-      messageInterval: 1000,
+      runTime: 3000, // Time to run the spike test
+      waitTime: 1000, // Time to wait before starting the next spike
+      messageInterval: 500,
       clientStartId: 5,
-    }
-    
+    },
   },
   rtt: {
     numClients: 1000,

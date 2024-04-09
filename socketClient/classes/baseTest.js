@@ -19,12 +19,16 @@ class BaseTest {
   /**
    * Sets up the data transfer process for the WebSocket clients.
    * Initializes the data transfer process and creates WebSocket clients based on the provided options.
-   * 
+   *
    * @returns {Promise<void>} A promise that resolves when the setup is complete.
    */
   async setup() {
-    console.log("id", this.clientStartId)
-    for (this.clientStartId; this.clientStartId < this.options.numClients; this.clientStartId++) {
+    console.log("id", this.clientStartId);
+    for (
+      this.clientStartId;
+      this.clientStartId < this.options.numClients;
+      this.clientStartId++
+    ) {
       const client = new WebSocketClient(
         this.clientStartId.toString(),
         this.url,
@@ -51,7 +55,7 @@ class BaseTest {
       }, 1000);
     }
   }
-  
+
   /**
    * Connects all the clients and starts sending messages.
    * @returns {Promise<void>} A promise that resolves when all clients are connected.
@@ -67,7 +71,6 @@ class BaseTest {
    * @returns {Promise<void>} A promise that resolves when the teardown is complete.
    */
   async teardown() {
-    console.log("Closing WebSocket connections...");
     await Promise.all(this.clients.map((client) => client.close()));
     this.options.onComplete();
   }

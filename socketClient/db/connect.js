@@ -4,37 +4,15 @@ const mongoUri = config.mongo.uri;
 
 let mongoClient;
 let mongoCollection;
-let db
-// /**
-//  * Sets up the database connections.
-//  * @returns {Promise<void>} A promise that resolves when the database connections are set up successfully.
-//  */
-// const setupDatabaseConnections = async () => {
-//   try {
-//     // Setup MongoDB connection
-//     mongoClient = new MongoClient(mongoUri);
-//     await mongoClient.connect();
-//     db = mongoClient.db(config.mongo.dbName);
-//     mongoCollection = db.collection(config.mongo.collectionName);
-//     console.log("Connected to MongoDB");
-//   } catch (error) {
-//     console.error("Error setting up database connections:", error);
-//   }
-// }
-/**
- * Sets up the database connections.
- */
+let db;
+
 const setupDatabaseConnections = async () => {
   try {
     // Setup MongoDB connection
-    mongoClient = new MongoClient(config.mongo.uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    mongoClient = new MongoClient(config.mongo.uri);
     await mongoClient.connect();
     db = mongoClient.db(config.mongo.dbName);
     mongoCollection = db.collection(config.mongo.collectionName);
-    console.log("Connected to MongoDB");
   } catch (error) {
     console.error("Error setting up database connections:", error);
   }
@@ -52,7 +30,7 @@ const getMongoCollection = () => {
     );
   }
   return mongoCollection;
-}
+};
 
 /**
  * Sets the MongoDB collection to be used.
@@ -60,15 +38,19 @@ const getMongoCollection = () => {
  */
 const setMongoCollection = async (collection) => {
   mongoCollection = await db.collection(collection);
-}
-
+};
 
 /**
- * Calculates the average time difference for a given collection.
- * @param {string} collectionName - The name of the collection to calculate on.
- * @returns {Promise<number>} - The average time difference.
+ * Calculates and returns the average time difference, total number of clients,
+ * maximum client ID, fastest time difference, and slowest time difference
+ * for a given collection.
+ *
+ * @param {string} collectionName - The name of the collection to calculate results for.
+ * @returns {Promise<Object|null>} - A promise that resolves to an object containing the calculated results,
+ *                                   or null if no results are found.
+ * @throws {Error} - If there is an error in the calculation process.
  */
-const calculateAverageTimeDifference = async (collectionName) => {
+const calculateResults = async (collectionName) => {
   try {
     const collection = db.collection(collectionName);
     const pipeline = [
@@ -80,40 +62,66 @@ const calculateAverageTimeDifference = async (collectionName) => {
               { $toLong: "$preSendTimestamp" },
             ],
           },
+          clientIdNumber: { $toInt: "$clientId" }, // Convert clientId to a number
+        },
+      },
+      {
+        $group: {
+          _id: "$clientIdNumber", // Group by the numeric clientId
+          avgTimeDifference: { $avg: "$timeDifference" },
+          minTimeDifference: { $min: "$timeDifference" }, // Find the fastest time
+          maxTimeDifference: { $max: "$timeDifference" }, // Find the slowest time
         },
       },
       {
         $group: {
           _id: null,
-          averageTimeDifference: { $avg: "$timeDifference" },
+          maxClientId: { $max: "$_id" }, // Finds the maximum of the numeric clientId
+          averageTimeDifference: { $avg: "$avgTimeDifference" },
+          totalClients: { $sum: 1 }, // Counts the unique clientIds
+          fastestTimeDifference: { $min: "$minTimeDifference" }, // Overall fastest
+          slowestTimeDifference: { $max: "$maxTimeDifference" }, // Overall slowest
         },
       },
       {
-        // Convert the average time difference from nanoseconds to milliseconds
         $project: {
           _id: 0,
+          maxClientId: 1,
+          totalClients: 1,
           averageTimeDifferenceInMs: {
-            $divide: ["$averageTimeDifference", 1000000]
-          }
-        }
-      }
+            $divide: ["$averageTimeDifference", 1000000],
+          },
+          fastestTimeDifferenceInMs: {
+            $divide: ["$fastestTimeDifference", 1000000],
+          },
+          slowestTimeDifferenceInMs: {
+            $divide: ["$slowestTimeDifference", 1000000],
+          },
+        },
+      },
     ];
 
     const result = await collection.aggregate(pipeline).toArray();
     if (result.length > 0) {
-      return result[0].averageTimeDifferenceInMs; // Now returns the converted average
+      // Returns the calculated averages, client counts, and fastest/slowest times
+      return {
+        averageTimeDifferenceInMs: result[0].averageTimeDifferenceInMs,
+        totalClients: result[0].totalClients,
+        maxClientId: result[0].maxClientId,
+        fastestTimeDifferenceInMs: result[0].fastestTimeDifferenceInMs, // Fastest time in ms
+        slowestTimeDifferenceInMs: result[0].slowestTimeDifferenceInMs, // Slowest time in ms
+      };
     } else {
-      return null; // Or handle as needed if no documents are found
+      return null;
     }
   } catch (error) {
-    console.error("Error calculating average time difference:", error);
+    console.error("Error in calculation:", error);
     throw error;
   }
 };
-
 module.exports = {
   setupDatabaseConnections,
   getMongoCollection,
   setMongoCollection,
-  calculateAverageTimeDifference
+  calculateResults,
 };
