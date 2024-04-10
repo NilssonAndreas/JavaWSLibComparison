@@ -115,13 +115,19 @@ class BaseWebSocketClient {
   close() {
     return new Promise((resolve, reject) => {
       if (this.socket) {
+        this.socket.onclose = () => {
+          resolve();
+        };
+        this.socket.onerror = (error) => {
+          reject("Socket encountered an error during closing: " + error.message);
+        };
         this.socket.close();
-        resolve();
       } else {
         reject("Socket is not open.");
       }
     });
   }
+
 }
 
 module.exports = BaseWebSocketClient;

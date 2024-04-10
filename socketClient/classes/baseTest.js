@@ -71,7 +71,12 @@ class BaseTest {
    * @returns {Promise<void>} A promise that resolves when the teardown is complete.
    */
   async teardown() {
-    await Promise.all(this.clients.map((client) => client.close()));
+    try {
+      await Promise.all(this.clients.map((client) => client.close()));
+    } catch (error) {
+      console.error("Error closing clients:", error);
+      // Handle errors or cleanup if necessary
+    }
     this.options.onComplete();
   }
 
