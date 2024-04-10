@@ -20,7 +20,11 @@ const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
-
+let startTimeInNano = 0
+let endTimeInNano = 0
+let endConnectionTime = 0
+let startSpikeConnectionTime = 0
+let endSpikeConnectionTime = 0
 let exitCounter = 0;
 /**
  * Gathers the results for each collection in the given array and saves them to a file.
@@ -40,7 +44,10 @@ const gatherResultsAndSave = async (collectionArray) => {
     const result = await calculateResults(name);
     results.collections[name] = result;
   }
-
+  // Calculate the duration of the test in seconds
+  results.duration = Number(endTimeInNano - startTimeInNano) / 1000000;
+  results.connectionTime = Number(endConnectionTime - startTimeInNano) / 1000000;
+  results.spikeConnectionTime = Number(endSpikeConnectionTime - startSpikeConnectionTime) / 1000000;
   // Read the existing file, append the new result, and write it back
   fs.readFile(path, (err, data) => {
     // Initialize an array to hold all results
@@ -85,6 +92,7 @@ const onCompleteSpike = async () => {
     console.log("Spike test complete. Waiting for normal test to finish...");
   }
   if (exitCounter === 2) {
+    endTimeInNano = process.hrtime.bigint()
     console.log("Calulating results...  please wait.");
     await gatherResultsAndSave([
       options.mongo.collectionName,
@@ -127,14 +135,19 @@ const main = async () => {
         validateOptions(spikeTestData, rl);
         const test = new TimedTest(url, spikeTestData);
         console.log("Starting test with normal load...");
+        startTimeInNano = process.hrtime.bigint()
         await test.run();
+        endConnectionTime = process.hrtime.bigint()
 
         setTimeout(async () => {
           await setMongoCollection(options.mongo.spikeCollectionName);
+
           spikeTestData.spike.clientStartId = spikeTestData.numClients;
           const test2 = new TimedTest(url, spikeTestData.spike);
           console.log("Starting spike with increased load...");
+          startSpikeConnectionTime = process.hrtime.bigint()
           await test2.run();
+          endSpikeConnectionTime = process.hrtime.bigint()
         }, spikeTestData.spike.waitTime);
       }
       if (testType === "2") {
