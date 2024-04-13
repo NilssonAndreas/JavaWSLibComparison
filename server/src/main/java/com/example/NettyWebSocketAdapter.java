@@ -75,7 +75,7 @@ public class NettyWebSocketAdapter implements Runnable, AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        stop(); // Ensure you can call stop in a try-with-resources block or similar
+        stop(); 
     }
 
     public void stop() {

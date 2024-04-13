@@ -108,6 +108,9 @@ public class BenchmarkServer {
         });
     }
 
+    /**
+     * Records the CPU usage and stores it in the cpuUsageData map.
+     */
     private static void recordCpuUsage() {
         long[] ticks = processor.getSystemCpuLoadTicks();
         double load = processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100;
@@ -115,6 +118,11 @@ public class BenchmarkServer {
         cpuUsageData.put(Instant.now(), load);
     }
 
+    /**
+     * Calculates the statistics for CPU usage data and returns the result as a JSON string.
+     *
+     * @return A JSON string representing the statistics for CPU usage data.
+     */
     private static String calculateStats() {
         double average = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
         double max = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);

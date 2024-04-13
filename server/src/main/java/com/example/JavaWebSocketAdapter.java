@@ -1,22 +1,28 @@
 package com.example;
+
 import org.java_websocket.server.WebSocketServer;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
 import java.net.InetSocketAddress;
 
-public class JavaWebSocketAdapter extends WebSocketServer {
+public class JavaWebSocketAdapter extends WebSocketServer implements AutoCloseable {
 
     private BenchmarkSocketServer benchmarkServer;
     public int portNumber;
 
+    /**
+     * The `JavaWebSocketAdapter` class is a WebSocket server adapter that extends the `WebSocketServer` class.
+     * It provides functionality to start and stop the WebSocket server on a specified port.
+     */
     public JavaWebSocketAdapter(int port) {
         super(new InetSocketAddress(port));
         this.portNumber = port;
         benchmarkServer = new BenchmarkSocketServer() {
             @Override
             public void startServer() {
-                // Not used in this context as the WebSocketServer's start method is called directly.
+                // Not used in this context as the WebSocketServer's start method is called
+                // directly.
             }
 
             @Override
@@ -28,6 +34,17 @@ public class JavaWebSocketAdapter extends WebSocketServer {
                 }
             }
         };
+    }
+
+    /**
+        * Closes the WebSocket server.
+        *
+        * @throws Exception if an error occurs while closing the server.
+        */
+    @Override
+    public void close() throws Exception {
+        this.stop(); // Stop the WebSocket server
+        System.out.println("WebSocket server stopped on port: " + this.portNumber);
     }
 
     @Override
@@ -66,10 +83,15 @@ public class JavaWebSocketAdapter extends WebSocketServer {
     public void logMetrics() {
         benchmarkServer.logMetrics();
     }
-    
+
     public static void main(String[] args) {
-        int port = 8887; // Set your desired port here
-        JavaWebSocketAdapter server = new JavaWebSocketAdapter(port);
-        server.start();
+        int port = 8887;
+        try (JavaWebSocketAdapter server = new JavaWebSocketAdapter(port)) {
+            server.start();
+            server.run();
+        } catch (Exception e) {
+            System.err.println("Error occurred while starting or stopping the server: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
