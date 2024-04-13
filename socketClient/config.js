@@ -19,7 +19,6 @@ const config = {
     afterSpikeCollectionName: "afterSpike",
   },
   base: {
-    uri: "ws://localhost:8887",
     payload: "payload",
     dateOfTest: formatTestDate(),
     nameOfTest: "LoadTest",
@@ -27,18 +26,23 @@ const config = {
   spikeTest: {
     numClients: 1000,
     runTime: 60000, // ToalRunTime for test
-    messageInterval: 500,
+    messageInterval: 1000,
     spike: {
-      numClients: 3000,
+      numClients: 1000,
       runTime: 20000, // Time to run the spike test
       waitTime: 20000, // Time to wait before starting the next spike
-      messageInterval: 500,
+      messageInterval: 1000,
     },
   },
-  rtt: {
+  loadTest: {
     numClients: 1000,
     runTime: 15000,
-    messageInterval: 1000,
+    messageInterval: 300,
+  },
+  servers: {
+    1: { name: "JavaWebSocket", port: 8887, uri: "ws://localhost:8887"},
+    2: { name: "NettyWebSocket", port: 8888, uri: "ws://localhost:8888"},
+    3: { name: "UndertowWebSocket", port: 8889, uri: "ws://localhost:8889"},
   },
 };
 
