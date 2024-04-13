@@ -119,7 +119,9 @@ class BaseWebSocketClient {
           resolve();
         };
         this.socket.onerror = (error) => {
-          reject("Socket encountered an error during closing: " + error.message);
+          reject(
+            "Socket encountered an error during closing: " + error.message
+          );
         };
         this.socket.close();
       } else {
@@ -127,7 +129,6 @@ class BaseWebSocketClient {
       }
     });
   }
-
 }
 
 module.exports = BaseWebSocketClient;

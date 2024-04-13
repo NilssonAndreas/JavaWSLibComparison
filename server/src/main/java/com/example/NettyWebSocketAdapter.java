@@ -12,10 +12,11 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
-public class NettyWebSocketAdapter {
-    private BenchmarkSocketServer benchmark;
-
+public class NettyWebSocketAdapter implements Runnable, AutoCloseable {
     private final int port;
+    private EventLoopGroup bossGroup;
+    private EventLoopGroup workerGroup;
+    private final BenchmarkSocketServer benchmark;
 
     public NettyWebSocketAdapter(int port) {
         this.port = port;
@@ -37,9 +38,14 @@ public class NettyWebSocketAdapter {
         };
     }
 
+    @Override
+    public void run() {
+        start();
+    }
+
     public void start() {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(); // Accept incoming connections
-        EventLoopGroup workerGroup = new NioEventLoopGroup(); // Handle the traffic of the accepted connections
+        bossGroup = new NioEventLoopGroup(); // Accept incoming connections
+        workerGroup = new NioEventLoopGroup(); // Handle the traffic of the accepted connections
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
@@ -57,21 +63,39 @@ public class NettyWebSocketAdapter {
                             // frames
                         }
                     });
+
             ChannelFuture f = b.bind(port).sync(); // Bind and start to accept incoming connections.
-            System.out.println("Server started successfully on port " + port);
             f.channel().closeFuture().sync(); // Wait until the server socket is closed.
         } catch (Exception e) {
             System.err.println("An error occurred while starting the server: " + e.getMessage());
-            e.printStackTrace();
         } finally {
-            // Shut down all event loops to terminate all threads.
-            bossGroup.shutdownGracefully();
-            workerGroup.shutdownGracefully();
-            System.out.println("Server shut down gracefully.");
+            stop();
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        stop(); 
+    }
+
+    public void stop() {
+        try {
+            if (bossGroup != null) {
+                bossGroup.shutdownGracefully().sync();
+            }
+            if (workerGroup != null) {
+                workerGroup.shutdownGracefully().sync();
+            }
+            System.out.println("Netty server stopped successfully.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // Preserve interrupt status
+            System.err.println("Server shutdown was interrupted: " + e.getMessage());
         }
     }
 
     public static void main(String[] args) throws Exception {
-        new NettyWebSocketAdapter(8887).start();
+        try (NettyWebSocketAdapter server = new NettyWebSocketAdapter(8887)) {
+            server.start();
+        }
     }
 }

@@ -13,22 +13,98 @@ const options = require("./config.js");
 const fs = require("fs");
 
 const path = "testResults.json";
-const url = options.base.uri;
 const spikeTestData = options.spikeTest;
-const rttTestData = options.rttTest;
+const loadTestData = options.loadTest;
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
-let startTimeInNano = 0
-let endTimeInNano = 0
-let endConnectionTime = 0
-let startSpikeConnectionTime = 0
-let endSpikeConnectionTime = 0
+let startTimeInNano = 0;
+let endTimeInNano = 0;
+let endConnectionTime = 0;
+let startSpikeConnectionTime = 0;
+let endSpikeConnectionTime = 0;
 let exitCounter = 0;
+let server = {};
+
+// set server based on user input
+const setServer = (serverId) => {
+  server = options.servers[serverId];
+};
+
 /**
- * Gathers the results for each collection in the given array and saves them to a file.
- *
+ * Fetches CPU usage data from the server and logs the average and maximum CPU load.
+ * @returns {Promise<void>} A promise that resolves when the CPU usage data is fetched and logged successfully.
+ */
+const fetchCpuUsage = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/monitor/stop");
+    const data = await response.json();
+    console.log("Average CPU Load:", data.average.toFixed(2), "%");
+    console.log("Max CPU Load:", data.max.toFixed(2), "%");
+    return data;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
+/**
+ * Starts the CPU monitor by making a request to the server.
+ * @returns {Promise} A promise that resolves to the JSON response from the server.
+ */
+const startCpuMonitor = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/monitor/start");
+    const jsonResponse = await response.json(); // Make sure to parse the JSON before logging
+    console.log(jsonResponse); // Log the parsed JSON response
+    return jsonResponse;
+  } catch (error) {
+    console.error("Error starting monitor:", error);
+  }
+};
+
+/**
+ * Starts the server with the specified server type and port.
+ * @param {string} serverType - The type of server.
+ * @param {number} port - The port number to listen on.
+ * @returns {Promise<Object>} - A promise that resolves to the server response.
+ */
+const startServer = async (serverType, port) => {
+  try {
+    const response = await fetch("http://localhost:8080/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ serverType, port }),
+    });
+    const jsonResponse = await response.json();
+    return jsonResponse;
+  } catch (error) {
+    console.error("Error starting server:", error);
+  }
+};
+
+
+const stopServer = async (serverType) => {
+  try {
+    const response = await fetch("http://localhost:8080/stop", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ serverType }),
+    });
+    const jsonResponse = await response.json();
+    return jsonResponse;
+  } catch (error) {
+    console.error("Error stopping server:", error);
+  }
+}
+
+
+/**
+ * Gathers the results for each collection and saves them to a file.
  * @param {Array<string>} collectionArray - An array of collection names.
  * @returns {Promise<void>} A promise that resolves when the results are saved.
  */
@@ -46,8 +122,11 @@ const gatherResultsAndSave = async (collectionArray) => {
   }
   // Calculate the duration of the test in seconds
   results.duration = Number(endTimeInNano - startTimeInNano) / 1000000;
-  results.connectionTime = Number(endConnectionTime - startTimeInNano) / 1000000;
-  results.spikeConnectionTime = Number(endSpikeConnectionTime - startSpikeConnectionTime) / 1000000;
+  results.connectionTime =
+    Number(endConnectionTime - startTimeInNano) / 1000000;
+  results.spikeConnectionTime =
+    Number(endSpikeConnectionTime - startSpikeConnectionTime) / 1000000;
+  results.cpuUsage = await fetchCpuUsage();
   // Read the existing file, append the new result, and write it back
   fs.readFile(path, (err, data) => {
     // Initialize an array to hold all results
@@ -92,7 +171,7 @@ const onCompleteSpike = async () => {
     console.log("Spike test complete. Waiting for normal test to finish...");
   }
   if (exitCounter === 2) {
-    endTimeInNano = process.hrtime.bigint()
+    endTimeInNano = process.hrtime.bigint();
     console.log("Calulating results...  please wait.");
     await gatherResultsAndSave([
       options.mongo.collectionName,
@@ -111,8 +190,13 @@ const onCompleteSpike = async () => {
  * It logs a message indicating the completion of the test,
  * exits the process after a delay of 1500 milliseconds.
  */
-const onComplete = () => {
+const onCompleteLoad = async () => {
   console.log("Test complete.");
+  endTimeInNano = process.hrtime.bigint();
+  console.log("Calulating results...  please wait.");
+  await gatherResultsAndSave([
+    options.mongo.collectionName,
+  ]);
   console.log("Exiting...");
   setTimeout(() => {
     process.exit();
@@ -125,40 +209,98 @@ const onComplete = () => {
  */
 const main = async () => {
   await setupDatabaseConnections();
-  rl.question(
-    "What test would you like to run? \n1.SpikeTest\n2.RTT Test\n",
-    async (testType) => {
-      validateTestType(testType, rl);
-      if (testType === "1") {
-        spikeTestData.onComplete = onCompleteSpike;
-        spikeTestData.spike.onComplete = onCompleteSpike;
-        validateOptions(spikeTestData, rl);
-        const test = new TimedTest(url, spikeTestData);
-        console.log("Starting test with normal load...");
-        startTimeInNano = process.hrtime.bigint()
-        await test.run();
-        endConnectionTime = process.hrtime.bigint()
 
-        setTimeout(async () => {
-          await setMongoCollection(options.mongo.spikeCollectionName);
+  // Dynamically create the server selection question from config
+  const serverChoices = Object.entries(options.servers)
+    .map(([id, { name }]) => `${id}. ${name}`)
+    .join("\n");
+  const serverQuestion = `Which server would you like to test? \n${serverChoices}\n`;
 
-          spikeTestData.spike.clientStartId = spikeTestData.numClients;
-          const test2 = new TimedTest(url, spikeTestData.spike);
-          console.log("Starting spike with increased load...");
-          startSpikeConnectionTime = process.hrtime.bigint()
-          await test2.run();
-          endSpikeConnectionTime = process.hrtime.bigint()
-        }, spikeTestData.spike.waitTime);
-      }
-      if (testType === "2") {
-        rttTestData.onComplete = onComplete;
-        const test = new TimedTest(url, rttTestData);
-        await test.run();
-      }
+  // Ask which server to start
+  rl.question(serverQuestion, async (serverId) => {
 
+    setServer(serverId);
+    console.log("server", server)
+    if (!server) {
+      console.log("Invalid server choice. Exiting...");
       rl.close();
+      process.exit();
     }
-  );
+
+    // Ask if any server needs to be stopped before starting the new one
+    rl.question(
+      `Do you need to stop any currently running server first? (y/n)\n`,
+      async (answer) => {
+        if (answer.toLowerCase() === "y") {
+          const stopQuestion = `Which server would you like to stop? \n${serverChoices}\n`;
+          rl.question(stopQuestion, async (stopId) => {
+            const stopServerConfig = options.servers[stopId];
+            if (stopServerConfig) {
+              const result = await stopServer(stopServerConfig.name);
+              console.log(result);
+            } else {
+              console.log(
+                "Invalid server choice for stopping. Continuing without stopping..."
+              );
+            }
+            // Proceed to start the chosen server
+            console.log(`Starting ${server.name} on port ${server.port}...`);
+            await startServer(server.name, server.port);
+            proceedWithTestSelection();
+          });
+        } else {
+          // Directly start the chosen server
+          console.log(`Starting ${server.name} on port ${server.port}...`);
+          await startServer(server.name, server.port);
+          proceedWithTestSelection();
+        }
+      }
+    );
+  });
+  // Proceed with the test selection and execution
+  const proceedWithTestSelection = () => {
+    rl.question(
+      "What test would you like to run? \n1. SpikeTest\n2. LoadTest Test\n",
+      async (testType) => {
+        validateTestType(testType, rl);
+        if (testType === "1") {
+          spikeTestData.onComplete = onCompleteSpike;
+          spikeTestData.spike.onComplete = onCompleteSpike;
+          validateOptions(spikeTestData, rl);
+          const test = new TimedTest(server.uri, spikeTestData);
+          console.log("Starting test with normal load...");
+          startCpuMonitor();
+          startTimeInNano = process.hrtime.bigint();
+          await test.run();
+          endConnectionTime = process.hrtime.bigint();
+
+          setTimeout(async () => {
+            await setMongoCollection(options.mongo.spikeCollectionName);
+
+            spikeTestData.spike.clientStartId = spikeTestData.numClients;
+            const test2 = new TimedTest(server.uri, spikeTestData.spike);
+            console.log("Starting spike with increased load...");
+            startSpikeConnectionTime = process.hrtime.bigint();
+            await test2.run();
+            endSpikeConnectionTime = process.hrtime.bigint();
+          }, spikeTestData.spike.waitTime);
+        } else if (testType === "2") {
+          
+
+          loadTestData.onComplete = onCompleteLoad;
+          validateOptions(loadTestData, rl);
+          const test = new TimedTest(server.uri, loadTestData);
+          console.log("Starting test with normal load...");
+          startCpuMonitor();
+          startTimeInNano = process.hrtime.bigint();
+          await test.run();
+          endConnectionTime = process.hrtime.bigint();
+        }
+
+        rl.close();
+      }
+    );
+  };
 };
 
 main().catch(console.error);
