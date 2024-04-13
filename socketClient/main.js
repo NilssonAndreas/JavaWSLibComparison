@@ -202,7 +202,7 @@ const onCompleteLoad = async () => {
   console.log("Exiting...");
   setTimeout(() => {
     process.exit();
-  }, 15000);
+  }, 1000);
 };
 
 /**

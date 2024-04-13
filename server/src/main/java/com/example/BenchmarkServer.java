@@ -20,7 +20,7 @@ public class BenchmarkServer {
 
     public static void main(String[] args) {
         port(8080);
-
+        CpuMonitor.setMonitoring(false);
         Thread monitoringThread = new Thread(() -> {
             while (!Thread.interrupted()) {
                 if (monitoringActive.get()) {
@@ -35,7 +35,7 @@ public class BenchmarkServer {
                 }
             }
         });
-
+        // MemoryMonitor.printMemoryUsage();
         CpuMonitor.startCpuMonitoring();
         monitoringThread.start();
 
@@ -134,12 +134,13 @@ public class BenchmarkServer {
     private static String calculateStats() {
         double average = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
         double max = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
-        double avgCpuLoad = CpuMonitor.getAverageCpuLoad();
+        Map<String, Double> jvmCpuLoad = CpuMonitor.getCpuLoad();
 
         Map<String, Double> stats = new HashMap<>();
         stats.put("average", average);
         stats.put("max", max);
-        stats.put("avgCpuLoad", avgCpuLoad);
+        stats.put("avgCpuLoad", jvmCpuLoad.get("average"));
+        stats.put("maxCpuLoad", jvmCpuLoad.get("max"));
         return gson.toJson(stats);
     }
 }

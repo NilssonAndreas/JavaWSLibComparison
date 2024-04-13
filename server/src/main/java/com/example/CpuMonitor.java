@@ -3,6 +3,8 @@ package com.example;
 import java.lang.management.ManagementFactory;
 import com.sun.management.OperatingSystemMXBean;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -27,27 +29,38 @@ public class CpuMonitor {
     }
 
     public static void startCpuMonitoring() {
-        if (monitoring == false) {
-            return;
-        }
 
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
         scheduler.scheduleAtFixedRate(() -> {
-            double cpuLoad = getJVMCpuLoad(); // Get the current CPU load
-            synchronized (data) {
-                data.add(cpuLoad); // Add the load to the data list
+            if (monitoring) {
+
+                double cpuLoad = getJVMCpuLoad(); // Get the current CPU load
+                synchronized (data) {
+                    data.add(cpuLoad); // Add the load to the data list
+                }
+
+                System.out.println("Current JVM CPU Load: " + cpuLoad + "%");
             }
-            System.out.println("Current JVM CPU Load: " + cpuLoad + "%");
-        }, 0, 5, TimeUnit.SECONDS);
+        }, 0, 1, TimeUnit.SECONDS);
     }
 
-    public static double getAverageCpuLoad() {
+    public static Map<String, Double> getCpuLoad() {
         synchronized (data) {
-            System.out.println("Data: " + data);
-            return data.stream() // Convert the data list to a stream
-                    .mapToDouble(Double::doubleValue) // Convert each Double to double
-                    .average() // Calculate the average
-                    .orElse(0.0); // If the list is empty, return 0.0
+            double maxLoad = data.stream()
+                    .mapToDouble(Double::doubleValue)
+                    .max()
+                    .orElse(0.0);
+
+            double averageLoad = data.stream()
+                    .mapToDouble(Double::doubleValue)
+                    .average()
+                    .orElse(0.0);
+
+            Map<String, Double> results = new HashMap<>();
+            results.put("average", averageLoad);
+            results.put("max", maxLoad);
+            return results;
         }
     }
 
