@@ -25,6 +25,7 @@ public class BenchmarkServer {
             while (!Thread.interrupted()) {
                 if (monitoringActive.get()) {
                     recordCpuUsage();
+
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException e) {
@@ -34,6 +35,8 @@ public class BenchmarkServer {
                 }
             }
         });
+
+        CpuMonitor.startCpuMonitoring();
         monitoringThread.start();
 
         post("/start", (request, response) -> {
@@ -49,6 +52,7 @@ public class BenchmarkServer {
 
                 switch (serverType) {
                     case "JavaWebSocket":
+
                         ServerManager.startServer("JavaWebSocket", new JavaWebSocketAdapter(port));
                         break;
                     case "NettyWebSocket":
@@ -90,7 +94,9 @@ public class BenchmarkServer {
             Map<String, Object> responseMap = new HashMap<>();
             try {
                 cpuUsageData.clear();
+                CpuMonitor.resetData();
                 monitoringActive.set(true);
+                CpuMonitor.setMonitoring(true);
                 responseMap.put("status", 200);
                 responseMap.put("message", "CPU monitoring started");
                 return gson.toJson(responseMap);
@@ -104,6 +110,7 @@ public class BenchmarkServer {
         get("/monitor/stop", (req, res) -> {
             res.type("application/json");
             monitoringActive.set(false);
+            CpuMonitor.setMonitoring(false);
             return calculateStats();
         });
     }
@@ -119,17 +126,20 @@ public class BenchmarkServer {
     }
 
     /**
-     * Calculates the statistics for CPU usage data and returns the result as a JSON string.
+     * Calculates the statistics for CPU usage data and returns the result as a JSON
+     * string.
      *
      * @return A JSON string representing the statistics for CPU usage data.
      */
     private static String calculateStats() {
         double average = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
         double max = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
+        double avgCpuLoad = CpuMonitor.getAverageCpuLoad();
 
         Map<String, Double> stats = new HashMap<>();
         stats.put("average", average);
         stats.put("max", max);
+        stats.put("avgCpuLoad", avgCpuLoad);
         return gson.toJson(stats);
     }
 }

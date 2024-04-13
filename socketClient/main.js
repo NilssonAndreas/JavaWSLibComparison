@@ -26,6 +26,7 @@ let startSpikeConnectionTime = 0;
 let endSpikeConnectionTime = 0;
 let exitCounter = 0;
 let server = {};
+let getCpuUsage;
 
 // set server based on user input
 const setServer = (serverId) => {
@@ -126,7 +127,7 @@ const gatherResultsAndSave = async (collectionArray) => {
     Number(endConnectionTime - startTimeInNano) / 1000000;
   results.spikeConnectionTime =
     Number(endSpikeConnectionTime - startSpikeConnectionTime) / 1000000;
-  results.cpuUsage = await fetchCpuUsage();
+  results.cpuUsage = getCpuUsage;
   // Read the existing file, append the new result, and write it back
   fs.readFile(path, (err, data) => {
     // Initialize an array to hold all results
@@ -193,6 +194,7 @@ const onCompleteSpike = async () => {
 const onCompleteLoad = async () => {
   console.log("Test complete.");
   endTimeInNano = process.hrtime.bigint();
+  getCpuUsage = await fetchCpuUsage();
   console.log("Calulating results...  please wait.");
   await gatherResultsAndSave([
     options.mongo.collectionName,

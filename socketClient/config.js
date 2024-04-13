@@ -35,7 +35,7 @@ const config = {
     },
   },
   loadTest: {
-    numClients: 1000,
+    numClients: 14000,
     runTime: 15000,
     messageInterval: 300,
   },
