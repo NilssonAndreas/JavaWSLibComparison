@@ -28,7 +28,7 @@ public class SystemMonitor {
     private static long[] prevTicks = processor.getSystemCpuLoadTicks();
 
     public static void startMonitoring() {
-        scheduler.scheduleAtFixedRate(SystemMonitor::performMonitoringTasks, 0, 1, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(SystemMonitor::performMonitoringTasks, 0, 10, TimeUnit.SECONDS);
     }
 
     private static void performMonitoringTasks() {

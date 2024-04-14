@@ -42,7 +42,7 @@ public class CpuMonitor {
 
                 System.out.println("Current JVM CPU Load: " + cpuLoad + "%");
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, 10, TimeUnit.SECONDS);
     }
 
     public static Map<String, Double> getCpuLoad() {
@@ -67,6 +67,13 @@ public class CpuMonitor {
     public static void resetData() {
         synchronized (data) {
             data.clear(); // Clear the data list to reset it
+        }
+    }
+
+    // Return array list for cpu load data
+    public static ArrayList<Double> getCpuLoadData() {
+        synchronized (data) {
+            return new ArrayList<>(data);
         }
     }
 }

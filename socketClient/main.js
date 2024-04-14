@@ -196,9 +196,9 @@ const onCompleteSpike = async () => {
  * exits the process after a delay of 1500 milliseconds.
  */
 const onCompleteLoad = async () => {
-  console.log("Test complete.");
   endTimeInNano = process.hrtime.bigint();
   getMetrics = await fetchCpuUsage();
+  console.log("Test complete.");
   console.log("Calulating results...  please wait.");
   await gatherResultsAndSave([options.mongo.collectionName]);
   console.log("Exiting...");

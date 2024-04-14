@@ -1,11 +1,12 @@
 package com.example;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import static spark.Spark.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-
+import java.time.Instant;
 public class BenchmarkServer {
 
     private static final Gson gson = new Gson();
@@ -105,7 +106,9 @@ public class BenchmarkServer {
         double ramMax = SystemMonitor.getMaxMemoryUsageGB();
         double ramAverage = SystemMonitor.getAverageMemoryUsageGB();
         Map<String, Double> jvmCpuLoad = CpuMonitor.getCpuLoad();
-
+        ArrayList<Double> cpuLoadData = CpuMonitor.getCpuLoadData();
+        Map<Instant, Double> cpuUsageData = SystemMonitor.getCpuUsageData();
+        Map<Instant, Long> memoryUsageData = SystemMonitor.getMemoryUsageData();
         // Prepare the JSON structure
         Map<String, Object> stats = new HashMap<>();
         stats.put("CpuAverage", cpuAverage);
@@ -114,6 +117,10 @@ public class BenchmarkServer {
         stats.put("RamMaxGB", ramMax);
         stats.put("JavaAvgCpuLoad", jvmCpuLoad.get("average"));
         stats.put("JavaMaxCpuLoad", jvmCpuLoad.get("max"));
+        stats.put("CpuLoadData", cpuLoadData);
+        stats.put("CpuUsageData", cpuUsageData);
+        stats.put("MemoryUsageData", memoryUsageData);
+
         return gson.toJson(stats);
     }
 }

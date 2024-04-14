@@ -29,21 +29,21 @@ const config = {
     runTime: 60000, // ToalRunTime for test
     messageInterval: 1000,
     spike: {
-      numClients: 1000,
+      numClients: 13000,
       runTime: 20000, // Time to run the spike test
       waitTime: 20000, // Time to wait before starting the next spike
-      messageInterval: 1000,
+      messageInterval: 500,
     },
   },
   loadTest: {
-    numClients: 1000,
-    runTime: 20000,
-    messageInterval: 300,
+    numClients: 4000,
+    runTime: 15000,
+    messageInterval: 1000,
   },
   servers: {
-    1: { name: "JavaWebSocket", port: 8887, uri: "ws://localhost:8887"},
-    2: { name: "NettyWebSocket", port: 8888, uri: "ws://localhost:8888"},
-    3: { name: "UndertowWebSocket", port: 8889, uri: "ws://localhost:8889"},
+    1: { name: "JavaWebSocket", port: 8887, uri: "ws://localhost:8887" },
+    2: { name: "NettyWebSocket", port: 8888, uri: "ws://localhost:8888" },
+    3: { name: "UndertowWebSocket", port: 8889, uri: "ws://localhost:8889" },
   },
 };
 
