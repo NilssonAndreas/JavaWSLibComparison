@@ -1,43 +1,22 @@
 package com.example;
 
-import oshi.SystemInfo;
-import oshi.hardware.CentralProcessor;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import static spark.Spark.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 public class BenchmarkServer {
-    private static final SystemInfo systemInfo = new SystemInfo();
-    private static final CentralProcessor processor = systemInfo.getHardware().getProcessor();
-    private static long[] prevTicks = processor.getSystemCpuLoadTicks();
-    private static Map<Instant, Double> cpuUsageData = new HashMap<>();
-    private static final AtomicBoolean monitoringActive = new AtomicBoolean(false);
+
     private static final Gson gson = new Gson();
 
     public static void main(String[] args) {
         port(8080);
         CpuMonitor.setMonitoring(false);
-        Thread monitoringThread = new Thread(() -> {
-            while (!Thread.interrupted()) {
-                if (monitoringActive.get()) {
-                    recordCpuUsage();
-
-                    try {
-                        Thread.sleep(5000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt(); // Ensure the interrupt flag is set back
-                        break;
-                    }
-                }
-            }
-        });
         // MemoryMonitor.printMemoryUsage();
         CpuMonitor.startCpuMonitoring();
-        monitoringThread.start();
+        SystemMonitor.startMonitoring();
 
         post("/start", (request, response) -> {
             response.type("application/json");
@@ -93,10 +72,10 @@ public class BenchmarkServer {
             res.type("application/json");
             Map<String, Object> responseMap = new HashMap<>();
             try {
-                cpuUsageData.clear();
                 CpuMonitor.resetData();
-                monitoringActive.set(true);
                 CpuMonitor.setMonitoring(true);
+                SystemMonitor.clearData();
+                SystemMonitor.activateMonitoring();
                 responseMap.put("status", 200);
                 responseMap.put("message", "CPU monitoring started");
                 return gson.toJson(responseMap);
@@ -109,38 +88,33 @@ public class BenchmarkServer {
 
         get("/monitor/stop", (req, res) -> {
             res.type("application/json");
-            monitoringActive.set(false);
             CpuMonitor.setMonitoring(false);
-            return calculateStats();
+            SystemMonitor.deactivateMonitoring();
+            return gatherSystemMetrics();
         });
     }
 
     /**
-     * Records the CPU usage and stores it in the cpuUsageData map.
-     */
-    private static void recordCpuUsage() {
-        long[] ticks = processor.getSystemCpuLoadTicks();
-        double load = processor.getSystemCpuLoadBetweenTicks(prevTicks) * 100;
-        prevTicks = ticks;
-        cpuUsageData.put(Instant.now(), load);
-    }
-
-    /**
-     * Calculates the statistics for CPU usage data and returns the result as a JSON
-     * string.
+     * Calculates the statistics for CPU and RAM usage data and returns the result
+     * as a JSON string.
      *
-     * @return A JSON string representing the statistics for CPU usage data.
+     * @return A JSON string representing the statistics for CPU and RAM usage data.
      */
-    private static String calculateStats() {
-        double average = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).average().orElse(0);
-        double max = cpuUsageData.values().stream().mapToDouble(Double::doubleValue).max().orElse(0);
+    private static String gatherSystemMetrics() {
+        double cpuMax = SystemMonitor.getMaxCpuUsage();
+        double cpuAverage = SystemMonitor.getAverageCpuUsage();
+        double ramMax = SystemMonitor.getMaxMemoryUsageGB();
+        double ramAverage = SystemMonitor.getAverageMemoryUsageGB();
         Map<String, Double> jvmCpuLoad = CpuMonitor.getCpuLoad();
 
-        Map<String, Double> stats = new HashMap<>();
-        stats.put("average", average);
-        stats.put("max", max);
-        stats.put("avgCpuLoad", jvmCpuLoad.get("average"));
-        stats.put("maxCpuLoad", jvmCpuLoad.get("max"));
+        // Prepare the JSON structure
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("CpuAverage", cpuAverage);
+        stats.put("CpuMax", cpuMax);
+        stats.put("RamAverageGB", ramAverage);
+        stats.put("RamMaxGB", ramMax);
+        stats.put("JavaAvgCpuLoad", jvmCpuLoad.get("average"));
+        stats.put("JavaMaxCpuLoad", jvmCpuLoad.get("max"));
         return gson.toJson(stats);
     }
 }
