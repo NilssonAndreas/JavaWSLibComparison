@@ -26,7 +26,7 @@ let startSpikeConnectionTime = 0;
 let endSpikeConnectionTime = 0;
 let exitCounter = 0;
 let server = {};
-let getCpuUsage;
+let getMetrics;
 
 // set server based on user input
 const setServer = (serverId) => {
@@ -41,8 +41,6 @@ const fetchCpuUsage = async () => {
   try {
     const response = await fetch("http://localhost:8080/monitor/stop");
     const data = await response.json();
-    console.log("Average CPU Load:", data.average.toFixed(2), "%");
-    console.log("Max CPU Load:", data.max.toFixed(2), "%");
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -86,7 +84,6 @@ const startServer = async (serverType, port) => {
   }
 };
 
-
 const stopServer = async (serverType) => {
   try {
     const response = await fetch("http://localhost:8080/stop", {
@@ -101,8 +98,7 @@ const stopServer = async (serverType) => {
   } catch (error) {
     console.error("Error stopping server:", error);
   }
-}
-
+};
 
 /**
  * Gathers the results for each collection and saves them to a file.
@@ -127,7 +123,7 @@ const gatherResultsAndSave = async (collectionArray) => {
     Number(endConnectionTime - startTimeInNano) / 1000000;
   results.spikeConnectionTime =
     Number(endSpikeConnectionTime - startSpikeConnectionTime) / 1000000;
-  results.cpuUsage = getCpuUsage;
+  results.systemMetrics = getMetrics;
   // Read the existing file, append the new result, and write it back
   fs.readFile(path, (err, data) => {
     // Initialize an array to hold all results
@@ -174,6 +170,7 @@ const onCompleteSpike = async () => {
   if (exitCounter === 2) {
     endTimeInNano = process.hrtime.bigint();
     console.log("Calulating results...  please wait.");
+    getMetrics = await fetchCpuUsage();
     await gatherResultsAndSave([
       options.mongo.collectionName,
       options.mongo.spikeCollectionName,
@@ -194,11 +191,9 @@ const onCompleteSpike = async () => {
 const onCompleteLoad = async () => {
   console.log("Test complete.");
   endTimeInNano = process.hrtime.bigint();
-  getCpuUsage = await fetchCpuUsage();
+  getMetrics = await fetchCpuUsage();
   console.log("Calulating results...  please wait.");
-  await gatherResultsAndSave([
-    options.mongo.collectionName,
-  ]);
+  await gatherResultsAndSave([options.mongo.collectionName]);
   console.log("Exiting...");
   setTimeout(() => {
     process.exit();
@@ -220,9 +215,8 @@ const main = async () => {
 
   // Ask which server to start
   rl.question(serverQuestion, async (serverId) => {
-
     setServer(serverId);
-    console.log("server", server)
+    console.log("server", server);
     if (!server) {
       console.log("Invalid server choice. Exiting...");
       rl.close();
@@ -287,8 +281,6 @@ const main = async () => {
             endSpikeConnectionTime = process.hrtime.bigint();
           }, spikeTestData.spike.waitTime);
         } else if (testType === "2") {
-          
-
           loadTestData.onComplete = onCompleteLoad;
           validateOptions(loadTestData, rl);
           const test = new TimedTest(server.uri, loadTestData);
