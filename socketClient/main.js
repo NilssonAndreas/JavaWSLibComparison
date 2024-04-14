@@ -3,6 +3,7 @@ const {
   setupDatabaseConnections,
   setMongoCollection,
   calculateResults,
+  getMongoCollection,
 } = require("./db/connect.js");
 const TimedTest = require("./classes/timedTest.js");
 const {
@@ -124,6 +125,12 @@ const gatherResultsAndSave = async (collectionArray) => {
   results.spikeConnectionTime =
     Number(endSpikeConnectionTime - startSpikeConnectionTime) / 1000000;
   results.systemMetrics = getMetrics;
+
+  // Save the results to the database
+  await setMongoCollection(options.mongo.testResultsCollectionName);
+  const dataCollection = await getMongoCollection();
+  await dataCollection.insertOne(results);
+
   // Read the existing file, append the new result, and write it back
   fs.readFile(path, (err, data) => {
     // Initialize an array to hold all results

@@ -17,6 +17,7 @@ const config = {
     collectionName: "beforeSpike",
     spikeCollectionName: "duringSpike",
     afterSpikeCollectionName: "afterSpike",
+    testResultsCollectionName: "testResults",
   },
   base: {
     payload: "payload",
