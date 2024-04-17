@@ -13,6 +13,12 @@ const setupDatabaseConnections = async () => {
     await mongoClient.connect();
     db = mongoClient.db(config.mongo.dbName);
     mongoCollection = db.collection(config.mongo.collectionName);
+    await db.dropCollection(config.mongo.collectionName);
+    await db.dropCollection(config.mongo.spikeCollectionName);
+    await db.dropCollection(config.mongo.afterSpikeCollectionName);
+    
+    
+    
   } catch (error) {
     console.error("Error setting up database connections:", error);
   }
