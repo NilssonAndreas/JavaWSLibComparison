@@ -7,6 +7,7 @@ import static spark.Spark.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.time.Instant;
+
 public class BenchmarkServer {
 
     private static final Gson gson = new Gson();
@@ -39,6 +40,9 @@ public class BenchmarkServer {
                         break;
                     case "UndertowWebSocket":
                         ServerManager.startServer("UndertowWebSocket", new UndertowWebSocketAdapter(port));
+                        break;
+                    case "VertxWebSocket":
+                        ServerManager.startServer("VertxWebSocket", new VertxWebSocketAdapter(port));
                         break;
                     default:
                         response.status(400); // Bad Request

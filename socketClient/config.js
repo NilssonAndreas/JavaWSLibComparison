@@ -36,7 +36,7 @@ const config = {
     },
   },
   loadTest: {
-    numClients: 4000,
+    numClients: 500,
     runTime: 15000,
     messageInterval: 1000,
   },
@@ -44,6 +44,7 @@ const config = {
     1: { name: "JavaWebSocket", port: 8887, uri: "ws://localhost:8887" },
     2: { name: "NettyWebSocket", port: 8888, uri: "ws://localhost:8888" },
     3: { name: "UndertowWebSocket", port: 8889, uri: "ws://localhost:8889" },
+    4: { name: "VertxWebSocket", port: 9999, uri: "ws://localhost:9999" },
   },
 };
 
