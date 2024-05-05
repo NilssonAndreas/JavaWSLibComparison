@@ -22,29 +22,28 @@ const config = {
   base: {
     payload: "payload",
     dateOfTest: formatTestDate(),
-    nameOfTest: "LoadTest",
+    nameOfTest: "SpikeTest - Netty #3",
   },
   spikeTest: {
-    numClients: 1000,
-    runTime: 60000, // ToalRunTime for test
+    numClients: 2000,
+    runTime: 1800000, // ToalRunTime for test
     messageInterval: 1000,
     spike: {
-      numClients: 13000,
-      runTime: 20000, // Time to run the spike test
-      waitTime: 20000, // Time to wait before starting the next spike
-      messageInterval: 500,
+      numClients: 10500,
+      runTime: 300000, // Time to run the spike test
+      waitTime: 750000, // Time to wait before starting the next spike
+      messageInterval: 1000,
     },
   },
   loadTest: {
     numClients: 500,
-    runTime: 15000,
+    runTime: 1800000,
     messageInterval: 1000,
   },
   servers: {
-    1: { name: "JavaWebSocket", port: 8887, uri: "ws://localhost:8887" },
-    2: { name: "NettyWebSocket", port: 8888, uri: "ws://localhost:8888" },
-    3: { name: "UndertowWebSocket", port: 8889, uri: "ws://localhost:8889" },
-    4: { name: "VertxWebSocket", port: 9999, uri: "ws://localhost:9999" },
+    1: { name: "JavaWebSocket", port: 8887, uri: "ws://192.168.1.15:8887" },
+    2: { name: "NettyWebSocket", port: 8888, uri: "ws://192.168.1.15:8888" },
+    3: { name: "UndertowWebSocket", port: 8889, uri: "ws://192.168.1.15:8889" },
   },
 };
 

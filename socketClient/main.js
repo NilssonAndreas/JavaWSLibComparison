@@ -40,7 +40,7 @@ const setServer = (serverId) => {
  */
 const fetchCpuUsage = async () => {
   try {
-    const response = await fetch("http://localhost:8080/monitor/stop");
+    const response = await fetch("http://192.168.1.15:8080/monitor/stop");
     const data = await response.json();
     return data;
   } catch (error) {
@@ -54,7 +54,7 @@ const fetchCpuUsage = async () => {
  */
 const startCpuMonitor = async () => {
   try {
-    const response = await fetch("http://localhost:8080/monitor/start");
+    const response = await fetch("http://192.168.1.15:8080/monitor/start");
     const jsonResponse = await response.json(); // Make sure to parse the JSON before logging
     console.log(jsonResponse); // Log the parsed JSON response
     return jsonResponse;
@@ -71,7 +71,7 @@ const startCpuMonitor = async () => {
  */
 const startServer = async (serverType, port) => {
   try {
-    const response = await fetch("http://localhost:8080/start", {
+    const response = await fetch("http://192.168.1.15:8080/start", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -87,7 +87,7 @@ const startServer = async (serverType, port) => {
 
 const stopServer = async (serverType) => {
   try {
-    const response = await fetch("http://localhost:8080/stop", {
+    const response = await fetch("http://192.168.1.15:8080/stop", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

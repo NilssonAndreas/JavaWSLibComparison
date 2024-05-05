@@ -56,10 +56,6 @@ class BaseTest {
     }
   }
 
-  /**
-   * Connects all the clients and starts sending messages.
-   * @returns {Promise<void>} A promise that resolves when all clients are connected.
-   */
   async connectClients() {
     await Promise.all(this.clients.map((client) => client.connect()));
     console.log("All clients connected.");

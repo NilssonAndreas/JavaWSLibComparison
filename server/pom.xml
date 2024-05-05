@@ -43,19 +43,6 @@
       <version>1.5.6</version>
     </dependency>
 
-    <!-- Vert.X -->
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <version>4.5.7</version>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-web</artifactId>
-      <version>4.5.7</version>
-    </dependency>
-
-
     <!-- Netty -->
     <dependency>
       <groupId>io.netty</groupId>
